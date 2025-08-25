@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaves Management - Outsourcey Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #0a0a0a;
+            line-height: 1.6;
+        }
+
+        .container {
+            padding: 65px 88px 88px 88px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            height: 44px;
+        }
+
+        .header h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            font-size: 44px;
+            line-height: 52px;
+            color: #0a0a0a;
+            letter-spacing: -0.88px;
+        }
+
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #e8e8e8;
+            overflow: hidden;
+            box-shadow: 0px 1px 1px 0px rgba(0, 0, 0, 0.18);
+            margin-top: 32px;
+        }
+
+        .table-header {
+            background-color: #f9f9f9;
+            border-bottom: 2px solid #d0d0d0;
+            padding: 16px;
+        }
+
+        .table-header-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 1.5fr;
+            gap: 16px;
+            font-weight: 500;
+            color: #969696;
+            font-size: 14px;
+        }
+
+        .table-body {
+            divide-y: 1px solid #d0d0d0;
+        }
+
+        .table-row {
+            padding: 16px;
+            transition: background-color 0.2s ease;
+        }
+
+        .table-row:hover {
+            background-color: #f9f9f9;
+        }
+
+        .table-row-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 1.5fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .employee-name {
+            font-weight: 500;
+            color: #0a0a0a;
+            font-size: 14px;
+        }
+
+        .employee-id {
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-paid {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-unpaid {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-approve {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .btn-approve:hover:not(:disabled) {
+            background-color: #c3e6cb;
+        }
+
+        .btn-reject {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-reject:hover:not(:disabled) {
+            background-color: #f1b0b7;
+        }
+
+        .btn-filter {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-filter.active {
+            background-color: #014c85;
+            color: white;
+        }
+
+        .btn-filter:not(.active) {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .btn-filter:not(.active):hover {
+            background-color: #e5e7eb;
+        }
+
+        .empty-state {
+            padding: 48px;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-description {
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .success-message, .error-message {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            animation: slideInFromRight 0.3s ease-out;
+        }
+
+        .success-message {
+            background-color: #f0f9ff;
+            border: 1px solid #38bdf8;
+            color: #0c4a6e;
+        }
+
+        .error-message {
+            background-color: #fef2f2;
+            border: 1px solid #f87171;
+            color: #991b1b;
+        }
+
+        @keyframes slideInFromRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 40px 20px 60px 20px;
+            }
+            
+            .table-header-grid,
+            .table-row-grid {
+                grid-template-columns: 2fr 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .table-header-grid > div:nth-child(n+4),
+            .table-row-grid > div:nth-child(n+4) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px 40px 16px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                height: auto;
+            }
+            
+            .header h1 {
+                font-size: 30px;
+                line-height: 36px;
+                text-align: center;
+            }
+            
+            .table-header-grid,
+            .table-row-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .table-header-grid > div,
+            .table-row-grid > div {
+                display: block !important;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 8px;
+            }
+            
+            .table-header-grid > div:last-child,
+            .table-row-grid > div:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Leaves</h1>
+            
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <button id="upcomingBtn" class="btn-filter active" onclick="setFilter('upcoming')">
+                    Upcoming
+                </button>
+                <button id="pastBtn" class="btn-filter" onclick="setFilter('past')">
+                    Past
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="table-container">
+            <!-- Table Header -->
+            <div class="table-header">
+                <div class="table-header-grid">
+                    <div>Team Member</div>
+                    <div>Leave Type</div>
+                    <div>Billing Type</div>
+                    <div>Leave Period</div>
+                    <div>Days/Hours Taken</div>
+                    <div>Status</div>
+                    <div>Action</div>
+                </div>
+            </div>
+
+            <!-- Table Body -->
+            <div class="table-body" id="tableBody">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-title">No leave requests</div>
+                <div class="empty-state-description">There are no leave requests to display for the selected filter.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div id="successMessage" class="success-message" style="display: none;"></div>
+    <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+    <script>
+        // Sample data based on the requirements
+        const sampleLeaveRequests = [
+            {
+                id: 1,
+                employee_id: "EMP001",
+                employee_name: "Sarah Johnson",
+                leave_type: "Annual Leave",
+                billing_type: "Paid",
+                start_date: "2025-09-15",
+                end_date: "2025-09-19",
+                duration: 5,
+                duration_type: "days",
+                status: "Pending",
+                reason: "Family vacation",
+                team_members: ["1", "2"] // IDs of representatives who can approve
+            },
+            {
+                id: 2,
+                employee_id: "EMP002",
+                employee_name: "Mike Chen",
+                leave_type: "Sick Leave",
+                billing_type: "Paid",
+                start_date: "2025-08-20",
+                end_date: "2025-08-22",
+                duration: 3,
+                duration_type: "days",
+                status: "Approved",
+                approved_by: "Admin User",
+                approved_at: "2025-08-19T10:30:00Z",
+                reason: "Medical appointment"
+            },
+            {
+                id: 3,
+                employee_id: "EMP003",
+                employee_name: "Emily Davis",
+                leave_type: "Personal Leave",
+                billing_type: "Unpaid",
+                start_date: "2025-09-01",
+                end_date: "2025-09-01",
+                duration: 4,
+                duration_type: "hours",
+                status: "Pending",
+                reason: "Personal matters",
+                team_members: ["1"]
+            },
+            {
+                id: 4,
+                employee_id: "EMP004",
+                employee_name: "James Wilson",
+                leave_type: "Annual Leave",
+                billing_type: "Paid",
+                start_date: "2025-07-10",
+                end_date: "2025-07-12",
+                duration: 3,
+                duration_type: "days",
+                status: "Rejected",
+                rejected_by: "Team Lead",
+                rejected_at: "2025-07-05T14:20:00Z",
+                reason: "Summer vacation"
+            },
+            {
+                id: 5,
+                employee_id: "EMP005",
+                employee_name: "Lisa Thompson",
+                leave_type: "Maternity Leave",
+                billing_type: "Paid",
+                start_date: "2025-10-01",
+                end_date: "2025-12-31",
+                duration: 92,
+                duration_type: "days",
+                status: "Pending",
+                reason: "Maternity leave",
+                team_members: ["1", "2"]
+            }
+        ];
+
+        // Current user simulation (admin access)
+        const currentUser = {
+            id: "1",
+            firstname: "Admin",
+            lastname: "User",
+            has_admin_access: true,
+            is_representative: false
+        };
+
+        let currentFilter = 'upcoming';
+        let processingRequests = new Set();
+
+        // Utility functions
+        function getInitials(name) {
+            return name
+                .split(' ')
+                .map(part => part.charAt(0).toUpperCase())
+                .join('')
+                .substring(0, 2);
+        }
+
+        function getBillingTypeBadge(billingType) {
+            const classes = billingType === 'Paid' ? 'badge-paid' : 'badge-unpaid';
+            return `<span class="badge ${classes}">${billingType}</span>`;
+        }
+
+        function getStatusBadge(status) {
+            const classes = {
+                'Approved': 'badge-approved',
+                'Rejected': 'badge-rejected',
+                'Pending': 'badge-pending'
+            }[status] || 'badge-pending';
+            return `<span class="badge ${classes}">${status}</span>`;
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function canApproveRequest(request) {
+            // Admins can approve all requests
+            if (currentUser.has_admin_access) {
+                return true;
+            }
+            
+            // Representatives can only approve requests from their assigned team members
+            if (currentUser.is_representative && request.team_members) {
+                return request.team_members.includes(currentUser.id);
+            }
+            
+            return false;
+        }
+
+        function filterRequests() {
+            const now = new Date();
+            
+            return sampleLeaveRequests.filter(request => {
+                const startDate = new Date(request.start_date);
+                const endDate = new Date(request.end_date);
+                
+                if (currentFilter === 'upcoming') {
+                    return startDate > now || (startDate < now && endDate > now);
+                } else {
+                    return endDate < now;
+                }
+            });
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const filteredRequests = filterRequests();
+
+            if (filteredRequests.length === 0) {
+                tableBody.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            tableBody.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            tableBody.innerHTML = filteredRequests.map(request => {
+                const isProcessing = processingRequests.has(request.id);
+                const canApprove = canApproveRequest(request);
+                
+                let actionHtml = '<span style="font-size: 12px; color: #9ca3af;">No actions available</span>';
+                
+                if (request.status === 'Pending' && canApprove) {
+                    actionHtml = `
+                        <div class="action-buttons">
+                            <button 
+                                class="btn btn-approve" 
+                                onclick="approveRequest(${request.id})"
+                                ${isProcessing ? 'disabled' : ''}
+                            >
+                                ${isProcessing ? 'Processing...' : 'Approve'}
+                            </button>
+                            <button 
+                                class="btn btn-reject" 
+                                onclick="rejectRequest(${request.id})"
+                                ${isProcessing ? 'disabled' : ''}
+                            >
+                                ${isProcessing ? 'Processing...' : 'Reject'}
+                            </button>
+                        </div>
+                    `;
+                } else if (request.status === 'Approved') {
+                    actionHtml = `<div style="font-size: 12px; color: #16a34a;">✓ Approved by ${request.approved_by}</div>`;
+                } else if (request.status === 'Rejected') {
+                    actionHtml = `<div style="font-size: 12px; color: #dc2626;">✗ Rejected by ${request.rejected_by}</div>`;
+                }
+
+                return `
+                    <div class="table-row">
+                        <div class="table-row-grid">
+                            <div class="employee-info">
+                                <div class="avatar">${getInitials(request.employee_name)}</div>
+                                <div>
+                                    <div class="employee-name">${request.employee_name}</div>
+                                    <div class="employee-id">${request.employee_id}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 14px; color: #0a0a0a;">${request.leave_type}</div>
+                            <div>${getBillingTypeBadge(request.billing_type)}</div>
+                            <div style="font-size: 14px; color: #0a0a0a;">
+                                <div>${formatDate(request.start_date)}</div>
+                                <div style="font-size: 12px; color: #6b7280;">to ${formatDate(request.end_date)}</div>
+                            </div>
+                            <div style="font-size: 14px; color: #0a0a0a; font-weight: 500;">
+                                ${request.duration} ${request.duration_type}
+                            </div>
+                            <div>${getStatusBadge(request.status)}</div>
+                            <div>${actionHtml}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update button states
+            document.getElementById('upcomingBtn').className = filter === 'upcoming' ? 'btn-filter active' : 'btn-filter';
+            document.getElementById('pastBtn').className = filter === 'past' ? 'btn-filter active' : 'btn-filter';
+            
+            renderTable();
+        }
+
+        function showMessage(message, type) {
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            if (type === 'success') {
+                successMsg.textContent = message;
+                successMsg.style.display = 'block';
+                errorMsg.style.display = 'none';
+            } else {
+                errorMsg.textContent = message;
+                errorMsg.style.display = 'block';
+                successMsg.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+                errorMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        async function approveRequest(requestId) {
+            try {
+                processingRequests.add(requestId);
+                renderTable();
+                
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Update the request in the data
+                const request = sampleLeaveRequests.find(r => r.id === requestId);
+                if (request) {
+                    request.status = 'Approved';
+                    request.approved_by = `${currentUser.firstname} ${currentUser.lastname}`;
+                    request.approved_at = new Date().toISOString();
+                }
+                
+                showMessage('Leave request approved successfully. Zoho People updated and operations team notified.', 'success');
+            } catch (error) {
+                console.error('Error approving request:', error);
+                showMessage('Failed to approve leave request. Please try again.', 'error');
+            } finally {
+                processingRequests.delete(requestId);
+                renderTable();
+            }
+        }
+
+        async function rejectRequest(requestId) {
+            try {
+                processingRequests.add(requestId);
+                renderTable();
+                
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Update the request in the data
+                const request = sampleLeaveRequests.find(r => r.id === requestId);
+                if (request) {
+                    request.status = 'Rejected';
+                    request.rejected_by = `${currentUser.firstname} ${currentUser.lastname}`;
+                    request.rejected_at = new Date().toISOString();
+                }
+                
+                showMessage('Leave request rejected successfully. Zoho People updated and operations team notified.', 'success');
+            } catch (error) {
+                console.error('Error rejecting request:', error);
+                showMessage('Failed to reject leave request. Please try again.', 'error');
+            } finally {
+                processingRequests.delete(requestId);
+                renderTable();
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTable();
+        });
+    </script>
+</body>
+</html>
