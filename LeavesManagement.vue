@@ -37,7 +37,7 @@
 
     <!-- Content Section -->
     <div class="content-section">
-      <!-- Desktop Table View -->
+      <!-- Desktop & Tablet Table View -->
       <div class="desktop-table">
         <div class="table-container">
           <!-- Table Header -->
@@ -45,9 +45,9 @@
             <div class="table-header-grid">
               <div>Team Member</div>
               <div>Leave Type</div>
-              <div>Billing Type</div>
+              <div class="hide-on-tablet">Billing Type</div>
               <div>Leave Period</div>
-              <div>Days/Hours Taken</div>
+              <div class="hide-on-tablet">Days/Hours Taken</div>
               <div>Status</div>
               <div>Action</div>
             </div>
@@ -76,7 +76,7 @@
                 <div class="cell-content">{{ request.leave_type }}</div>
 
                 <!-- Billing Type -->
-                <div>
+                <div class="hide-on-tablet">
                   <span :class="getBillingTypeClass(request.billing_type)" class="status-badge">
                     {{ request.billing_type }}
                   </span>
@@ -89,7 +89,7 @@
                 </div>
 
                 <!-- Days/Hours Taken -->
-                <div class="duration">
+                <div class="duration hide-on-tablet">
                   {{ request.duration_type === 'days' ? `${request.duration} days` : `${request.duration} hours` }}
                 </div>
 
@@ -302,16 +302,9 @@
 </template>
 
 <script setup lang="ts">
-// Note: Remove imports for standalone version
-// import AuthenticatedLayout from '@/layouts/AuthenticatedLayout.vue';
-// import PageHeader from '@/shared/PageHeader.vue';
-// import { useGlobalStore } from '@/stores/globalStore';
-// import { Head } from '@inertiajs/inertia-vue3';
-// import axios from 'axios';
-// import dayjs from 'dayjs';
-// import { PropType, computed, defineProps, ref } from 'vue';
+import { ref, computed } from 'vue';
 
-// For standalone version, create mock store
+// Mock store for standalone functionality
 const store = {
   getUser: {
     id: 1,
@@ -322,7 +315,7 @@ const store = {
   }
 };
 
-// Types
+// --- TYPES ---
 interface LeaveRequest {
   id: number;
   employee_id: string;
@@ -339,10 +332,10 @@ interface LeaveRequest {
   approved_at?: string;
   rejected_at?: string;
   reason?: string;
-  team_members?: string[]; // For representatives to check if they manage this employee
+  team_members?: string[]; 
 }
 
-// Sample data for standalone version
+// --- SAMPLE DATA ---
 const sampleLeaveRequests: LeaveRequest[] = [
   {
     id: 1,
@@ -360,7 +353,7 @@ const sampleLeaveRequests: LeaveRequest[] = [
   },
   {
     id: 2,
-    employee_id: "EMP002", 
+    employee_id: "EMP002",  
     employee_name: "Mike Chen",
     leave_type: "Sick Leave",
     billing_type: "Paid",
@@ -376,7 +369,7 @@ const sampleLeaveRequests: LeaveRequest[] = [
   {
     id: 3,
     employee_id: "EMP003",
-    employee_name: "Emily Davis", 
+    employee_name: "Emily Davis",  
     leave_type: "Personal Leave",
     billing_type: "Unpaid",
     start_date: "2025-09-01",
@@ -392,7 +385,7 @@ const sampleLeaveRequests: LeaveRequest[] = [
     employee_id: "EMP004",
     employee_name: "James Wilson",
     leave_type: "Annual Leave",
-    billing_type: "Paid", 
+    billing_type: "Paid",  
     start_date: "2025-07-10",
     end_date: "2025-07-12",
     duration: 3,
@@ -408,7 +401,7 @@ const sampleLeaveRequests: LeaveRequest[] = [
     employee_name: "Lisa Thompson",
     leave_type: "Maternity Leave",
     billing_type: "Paid",
-    start_date: "2025-10-01", 
+    start_date: "2025-10-01",  
     end_date: "2025-12-31",
     duration: 92,
     duration_type: "days",
@@ -418,7 +411,7 @@ const sampleLeaveRequests: LeaveRequest[] = [
   }
 ];
 
-// Reactive state
+// --- REACTIVE STATE ---
 const currentFilter = ref<'all' | 'upcoming' | 'past'>('all');
 const processingRequests = ref<Set<number>>(new Set());
 const successMessage = ref<string>('');
@@ -429,11 +422,7 @@ const declineReason = ref<string>('');
 const processingDecline = ref<boolean>(false);
 const leaveRequests = ref<LeaveRequest[]>(sampleLeaveRequests);
 
-// Mock ref for standalone version
-const ref = (value: any) => ({ value });
-const computed = (fn: any) => ({ value: fn() });
-
-// Computed properties
+// --- COMPUTED PROPERTIES ---
 const isAdmin = computed(() => store.getUser.has_admin_access);
 const isRepresentative = computed(() => store.getUser.is_representative || false);
 
@@ -447,15 +436,16 @@ const filteredRequests = computed(() => {
     if (currentFilter.value === 'all') {
       return true;
     } else if (currentFilter.value === 'upcoming') {
-      return startDate > now || (startDate < now && endDate > now);
-    } else {
+      return startDate > now || (startDate <= now && endDate >= now);
+    } else { // 'past'
       return endDate < now;
     }
   });
 });
 
-// Helper functions
+// --- HELPER FUNCTIONS ---
 function getInitials(name: string): string {
+  if (!name) return '';
   return name
     .split(' ')
     .map(part => part.charAt(0).toUpperCase())
@@ -465,25 +455,18 @@ function getInitials(name: string): string {
 
 function getBillingTypeClass(billingType: string): string {
   switch (billingType) {
-    case 'Paid':
-      return 'badge-paid';
-    case 'Unpaid':
-      return 'badge-unpaid';
-    default:
-      return 'badge-neutral';
+    case 'Paid': return 'badge-paid';
+    case 'Unpaid': return 'badge-unpaid';
+    default: return 'badge-neutral';
   }
 }
 
 function getStatusClass(status: string): string {
   switch (status) {
-    case 'Approved':
-      return 'badge-approved';
-    case 'Rejected':
-      return 'badge-rejected';
-    case 'Pending':
-      return 'badge-pending';
-    default:
-      return 'badge-neutral';
+    case 'Approved': return 'badge-approved';
+    case 'Rejected': return 'badge-rejected';
+    case 'Pending': return 'badge-pending';
+    default: return 'badge-neutral';
   }
 }
 
@@ -497,26 +480,19 @@ function formatDate(dateString: string): string {
 
 function getEmptyStateMessage(): string {
   switch (currentFilter.value) {
-    case 'upcoming':
-      return 'There are no upcoming leave requests to display.';
-    case 'past':
-      return 'There are no past leave requests to display.';
-    default:
-      return 'There are no leave requests to display.';
+    case 'upcoming': return 'There are no upcoming leave requests to display.';
+    case 'past': return 'There are no past leave requests to display.';
+    default: return 'There are no leave requests to display.';
   }
 }
 
 function canApproveRequest(request: LeaveRequest): boolean {
-  // Admins can approve all requests
   if (isAdmin.value) {
     return true;
   }
-  
-  // Representatives can only approve requests from their assigned team members
   if (isRepresentative.value && request.team_members) {
     return request.team_members.includes(store.getUser.id.toString());
   }
-  
   return false;
 }
 
@@ -535,7 +511,7 @@ function showMessage(message: string, type: 'success' | 'error') {
   }, 5000);
 }
 
-// Modal functions
+// --- MODAL FUNCTIONS ---
 function showDeclineModal(request: LeaveRequest) {
   selectedRequest.value = request;
   declineReason.value = '';
@@ -549,15 +525,14 @@ function closeDeclineModal() {
   processingDecline.value = false;
 }
 
-// API calls
+// --- API CALLS (MOCKED) ---
 async function approveRequest(requestId: number) {
+  processingRequests.value.add(requestId);
   try {
-    processingRequests.value.add(requestId);
-    
-    // Simulate API call for standalone version
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Update the request in the local state
+    // Update local state
     const request = leaveRequests.value.find(r => r.id === requestId);
     if (request) {
       request.status = 'Approved';
@@ -565,7 +540,7 @@ async function approveRequest(requestId: number) {
       request.approved_at = new Date().toISOString();
     }
     
-    showMessage('Leave request approved successfully. Zoho People updated and operations team notified.', 'success');
+    showMessage('Leave request approved successfully.', 'success');
   } catch (error) {
     console.error('Error approving request:', error);
     showMessage('Failed to approve leave request. Please try again.', 'error');
@@ -577,57 +552,47 @@ async function approveRequest(requestId: number) {
 async function confirmDecline() {
   if (!selectedRequest.value) return;
   
+  const requestId = selectedRequest.value.id;
+  processingDecline.value = true;
+  processingRequests.value.add(requestId);
+  
   try {
-    processingDecline.value = true;
-    processingRequests.value.add(selectedRequest.value.id);
-    
-    // Simulate API call for standalone version
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Update the request in the local state
-    const request = leaveRequests.value.find(r => r.id === selectedRequest.value?.id);
+    // Update local state
+    const request = leaveRequests.value.find(r => r.id === requestId);
     if (request) {
       request.status = 'Rejected';
       request.rejected_by = `${store.getUser.firstname} ${store.getUser.lastname}`;
       request.rejected_at = new Date().toISOString();
-      // Store the decline reason if provided
       if (declineReason.value.trim()) {
         request.reason = declineReason.value.trim();
       }
     }
     
-    showMessage('Leave request declined successfully. Zoho People updated and operations team notified.', 'success');
+    showMessage('Leave request declined successfully.', 'success');
     closeDeclineModal();
   } catch (error) {
     console.error('Error declining request:', error);
     showMessage('Failed to decline leave request. Please try again.', 'error');
   } finally {
     processingDecline.value = false;
-    if (selectedRequest.value) {
-      processingRequests.value.delete(selectedRequest.value.id);
-    }
+    processingRequests.value.delete(requestId);
   }
 }
 </script>
 
 <style scoped>
-/* Base Layout */
+/* --- BASE & TYPOGRAPHY --- */
 .leaves-management {
   font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #ffffff;
   color: #0a0a0a;
   line-height: 1.6;
-  padding: 40px 60px 60px 60px;
+  padding: 40px 60px 60px;
   max-width: 1400px;
   margin: 0 auto;
-}
-
-/* Header Section */
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
 }
 
 .page-title {
@@ -638,6 +603,16 @@ async function confirmDecline() {
   color: #0a0a0a;
   letter-spacing: -0.88px;
   margin: 0;
+}
+
+/* --- HEADER --- */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .header-controls {
@@ -673,12 +648,11 @@ async function confirmDecline() {
   color: white;
 }
 
-/* Content Section */
+/* --- CONTENT & TABLE --- */
 .content-section {
   margin-top: 8px;
 }
 
-/* Desktop Table */
 .desktop-table {
   display: block;
 }
@@ -688,13 +662,13 @@ async function confirmDecline() {
   border-radius: 8px;
   border: 1px solid #e8e8e8;
   overflow: hidden;
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .table-header {
-  background-color: #f9f9f9;
-  border-bottom: 2px solid #d0d0d0;
-  padding: 20px;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e8e8e8;
+  padding: 16px 24px;
 }
 
 .table-header-grid {
@@ -702,8 +676,10 @@ async function confirmDecline() {
   grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 1.5fr;
   gap: 20px;
   font-weight: 500;
-  color: #969696;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   font-family: 'Inter', sans-serif;
 }
 
@@ -712,17 +688,16 @@ async function confirmDecline() {
 }
 
 .table-row {
-  border-bottom: 1px solid #d0d0d0;
-  padding: 20px;
+  border-bottom: 1px solid #e8e8e8;
   transition: background-color 0.2s ease;
-}
-
-.table-row:hover {
-  background-color: #f9fafb;
 }
 
 .table-row:last-child {
   border-bottom: none;
+}
+
+.table-row:hover {
+  background-color: #f9fafb;
 }
 
 .table-row-grid {
@@ -730,9 +705,10 @@ async function confirmDecline() {
   grid-template-columns: 2fr 1fr 1fr 1.5fr 1fr 1fr 1.5fr;
   gap: 20px;
   align-items: center;
+  padding: 16px 24px;
 }
 
-/* Employee Info */
+/* --- TABLE CELL CONTENT --- */
 .employee-info {
   display: flex;
   align-items: center;
@@ -740,28 +716,22 @@ async function confirmDecline() {
 }
 
 .employee-avatar {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background-color: #f0f0f0;
+  background-color: #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 600;
-  color: #666;
-}
-
-.employee-details {
-  display: flex;
-  flex-direction: column;
+  color: #4b5563;
 }
 
 .employee-name {
   font-weight: 500;
-  color: #0a0a0a;
+  color: #111827;
   font-size: 14px;
-  margin-bottom: 2px;
 }
 
 .employee-id {
@@ -769,19 +739,9 @@ async function confirmDecline() {
   font-size: 12px;
 }
 
-/* Cell Content */
-.cell-content {
+.cell-content, .duration, .date-range {
   font-size: 14px;
-  color: #0a0a0a;
-}
-
-.date-range {
-  font-size: 14px;
-}
-
-.date-start {
-  color: #0a0a0a;
-  margin-bottom: 2px;
+  color: #374151;
 }
 
 .date-to {
@@ -789,602 +749,171 @@ async function confirmDecline() {
   font-size: 12px;
 }
 
-.duration {
-  font-size: 14px;
-  color: #0a0a0a;
-  font-weight: 500;
-}
-
-/* Status Badges */
+/* --- STATUS BADGES --- */
 .status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 9999px;
   font-size: 12px;
   font-weight: 500;
   display: inline-block;
+  text-transform: capitalize;
 }
+.badge-paid { background-color: #def7ec; color: #047857; }
+.badge-unpaid { background-color: #fef3c7; color: #92400e; }
+.badge-approved { background-color: #def7ec; color: #047857; }
+.badge-rejected { background-color: #fee2e2; color: #991b1b; }
+.badge-pending { background-color: #fef3c7; color: #92400e; }
+.badge-neutral { background-color: #e5e7eb; color: #4b5563; }
 
-.badge-paid {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.badge-unpaid {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.badge-approved {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.badge-rejected {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.badge-pending {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.badge-neutral {
-  background-color: #e2e3e5;
-  color: #6c757d;
-}
-
-/* Action Buttons */
+/* --- ACTION BUTTONS & STATUS --- */
 .action-buttons {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.btn-approve {
-  background-color: #d4edda;
-  color: #155724;
+.btn-approve, .btn-decline {
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
+.btn-approve { background-color: #d1fae5; color: #065f46; }
+.btn-approve:hover:not(:disabled) { background-color: #a7f3d0; }
+.btn-decline { background-color: #fee2e2; color: #991b1b; }
+.btn-decline:hover:not(:disabled) { background-color: #fecaca; }
+.btn-approve:disabled, .btn-decline:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.btn-approve:hover:not(:disabled) {
-  background-color: #c3e6cb;
-}
+.action-status { font-size: 13px; font-weight: 500; }
+.action-status.approved { color: #16a34a; }
+.action-status.rejected { color: #dc2626; }
+.action-status.disabled { color: #9ca3af; }
 
-.btn-decline {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-decline:hover:not(:disabled) {
-  background-color: #f1b0b7;
-}
-
-.btn-approve:disabled,
-.btn-decline:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.action-status {
-  font-size: 12px;
-}
-
-.action-status.approved {
-  color: #16a34a;
-}
-
-.action-status.rejected {
-  color: #dc2626;
-}
-
-.action-status.disabled {
-  color: #9ca3af;
-}
-
-/* Empty State */
-.empty-state {
+/* --- EMPTY STATE --- */
+.empty-state, .mobile-empty-state {
   padding: 60px 20px;
   text-align: center;
   color: #6b7280;
 }
+.empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state-title { font-size: 18px; font-weight: 500; margin-bottom: 8px; color: #374151; }
+.empty-state-description { font-size: 14px; }
 
-.empty-state-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-}
-
-.empty-state-title {
-  font-size: 18px;
-  font-weight: 500;
-  margin-bottom: 8px;
-  color: #374151;
-}
-
-.empty-state-description {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-/* Mobile Cards */
-.mobile-cards {
-  display: none;
-}
-
+/* --- MOBILE CARDS --- */
+.mobile-cards { display: none; }
 .mobile-card {
   background-color: white;
   border: 1px solid #e8e8e8;
   border-radius: 12px;
   margin-bottom: 16px;
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
   overflow: hidden;
+  transition: box-shadow 0.2s ease;
 }
+.mobile-card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+.mobile-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #f3f4f6; }
+.mobile-card-body { padding: 16px; }
+.info-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.info-row:last-child { margin-bottom: 0; }
+.info-label { font-size: 14px; color: #6b7280; }
+.info-value { font-size: 14px; color: #111827; font-weight: 500; text-align: right; }
+.mobile-card-actions { padding: 8px 16px 16px; display: flex; gap: 8px; }
+.mobile-card-actions .btn-approve.mobile, .mobile-card-actions .btn-decline.mobile { flex: 1; padding: 12px; font-size: 14px; }
+.mobile-card-status { padding: 16px; border-top: 1px solid #f3f4f6; }
 
-.mobile-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid #f3f4f6;
-}
+/* --- MODAL --- */
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.modal-content { background-color: white; border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 24px 0; }
+.modal-title { font-size: 18px; font-weight: 600; color: #111827; }
+.modal-close { background: none; border: none; padding: 4px; cursor: pointer; color: #6b7280; border-radius: 50%; transition: all 0.2s ease; }
+.modal-close:hover { background-color: #f3f4f6; color: #111827; }
+.modal-body { padding: 24px; }
+.request-summary { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+.summary-item { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.summary-item:last-child { margin-bottom: 0; }
+.summary-label { font-size: 14px; color: #6b7280; }
+.summary-value { font-size: 14px; color: #111827; font-weight: 500; }
+.form-label { display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px; }
+.optional { color: #9ca3af; font-weight: 400; }
+.form-textarea { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; font-family: inherit; resize: vertical; transition: all 0.2s ease; }
+.form-textarea:focus { outline: none; border-color: #014c85; box-shadow: 0 0 0 3px rgba(1, 76, 133, 0.1); }
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 0 24px 24px; }
+.btn-secondary { background-color: #f9fafb; border: 1px solid #d1d5db; color: #374151; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+.btn-secondary:hover { background-color: #f3f4f6; }
+.btn-decline-confirm { background-color: #dc2626; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color 0.2s ease; }
+.btn-decline-confirm:hover:not(:disabled) { background-color: #b91c1c; }
+.btn-decline-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.mobile-card-body {
-  padding: 16px;
-}
+/* --- TOAST MESSAGES --- */
+.toast-message { position: fixed; top: 20px; right: 20px; padding: 16px 20px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 60; animation: slideInFromRight 0.3s ease-out; max-width: 400px; font-size: 14px; font-weight: 500; }
+.toast-message.success { background-color: #f0fdf4; border: 1px solid #4ade80; color: #15803d; }
+.toast-message.error { background-color: #fef2f2; border: 1px solid #f87171; color: #b91c1c; }
+@keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-.info-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
+/* --- RESPONSIVE BREAKPOINTS --- */
 
-.info-row:last-child {
-  margin-bottom: 0;
-}
-
-.info-label {
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 14px;
-  color: #0a0a0a;
-  font-weight: 500;
-  text-align: right;
-  max-width: 60%;
-}
-
-.mobile-card-actions {
-  padding: 16px;
-  border-top: 1px solid #f3f4f6;
-  display: flex;
-  gap: 8px;
-}
-
-.mobile-card-actions .btn-approve.mobile,
-.mobile-card-actions .btn-decline.mobile {
-  flex: 1;
-  padding: 12px;
-  text-align: center;
-}
-
-.mobile-card-status {
-  padding: 16px;
-  border-top: 1px solid #f3f4f6;
-}
-
-.mobile-empty-state {
-  padding: 60px 20px;
-  text-align: center;
-  color: #6b7280;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 16px;
-}
-
-.modal-content {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 24px 0 24px;
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  color: #6b7280;
-  border-radius: 6px;
-  transition: background-color 0.2s ease;
-}
-
-.modal-close:hover {
-  background-color: #f3f4f6;
-  color: #374151;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
-.request-summary {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.summary-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.summary-item:last-child {
-  margin-bottom: 0;
-}
-
-.summary-label {
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.summary-value {
-  font-size: 14px;
-  color: #111827;
-  font-weight: 500;
-}
-
-.form-group {
-  margin-bottom: 0;
-}
-
-.form-label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.optional {
-  color: #9ca3af;
-  font-weight: 400;
-}
-
-.form-textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  transition: border-color 0.2s ease;
-}
-
-.form-textarea:focus {
-  outline: none;
-  border-color: #014c85;
-  box-shadow: 0 0 0 3px rgba(1, 76, 133, 0.1);
-}
-
-.form-textarea::placeholder {
-  color: #9ca3af;
-}
-
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 0 24px 24px 24px;
-}
-
-.btn-secondary {
-  background-color: #f9fafb;
-  border: 1px solid #d1d5db;
-  color: #374151;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-}
-
-.btn-decline-confirm {
-  background-color: #dc2626;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-decline-confirm:hover:not(:disabled) {
-  background-color: #b91c1c;
-}
-
-.btn-decline-confirm:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Toast Messages */
-.toast-message {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 16px 20px;
-  border-radius: 8px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  z-index: 60;
-  animation: slideInFromRight 0.3s ease-out;
-  max-width: 400px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.toast-message.success {
-  background-color: #f0f9ff;
-  border: 1px solid #38bdf8;
-  color: #0c4a6e;
-}
-
-.toast-message.error {
-  background-color: #fef2f2;
-  border: 1px solid #f87171;
-  color: #991b1b;
-}
-
-@keyframes slideInFromRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Tablet Responsive */
+/* Tablet (1200px) - Condensed Table */
 @media (max-width: 1200px) {
-  .leaves-management {
-    padding: 32px 40px 40px 40px;
-  }
-  
-  .page-title {
-    font-size: 36px;
-    line-height: 42px;
-  }
+  .leaves-management { padding: 32px 40px 40px; }
+  .page-title { font-size: 36px; line-height: 42px; }
   
   .table-header-grid,
   .table-row-grid {
-    grid-template-columns: 1.8fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1.5fr 1fr 1.5fr;
     gap: 16px;
   }
   
-  .table-header-grid > div:nth-child(n+4),
-  .table-row-grid > div:nth-child(n+4) {
+  .hide-on-tablet {
     display: none;
-  }
-  
-  .table-header,
-  .table-row {
-    padding: 16px;
   }
 }
 
-/* Mobile Responsive */
+/* Mobile (768px) - Card View */
 @media (max-width: 768px) {
-  .leaves-management {
-    padding: 20px 16px 40px 16px;
-  }
+  .leaves-management { padding: 20px 16px 40px; }
+  .header-section { flex-direction: column; align-items: stretch; gap: 20px; margin-bottom: 24px; }
+  .page-title { font-size: 28px; line-height: 32px; text-align: center; }
+  .header-controls, .filter-buttons { width: 100%; justify-content: center; }
+  .btn-filter { flex: 1; text-align: center; padding: 12px 8px; }
   
-  .header-section {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 24px;
-  }
+  .desktop-table { display: none; }
+  .mobile-cards { display: block; }
   
-  .page-title {
-    font-size: 28px;
-    line-height: 32px;
-    text-align: center;
-  }
-  
-  .header-controls {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .filter-buttons {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .btn-filter {
-    flex: 1;
-    text-align: center;
-    padding: 12px 8px;
-  }
-  
-  /* Hide desktop table on mobile */
-  .desktop-table {
-    display: none;
-  }
-  
-  /* Show mobile cards */
-  .mobile-cards {
-    display: block;
-  }
-  
-  .modal-overlay {
-    padding: 16px;
-  }
-  
-  .modal-content {
-    margin: 0;
-  }
-  
-  .modal-header {
-    padding: 20px 20px 0 20px;
-  }
-  
-  .modal-body {
-    padding: 20px;
-  }
-  
-  .modal-footer {
-    padding: 0 20px 20px 20px;
-    flex-direction: column-reverse;
-    gap: 8px;
-  }
-  
-  .btn-secondary,
-  .btn-decline-confirm {
-    width: 100%;
-    text-align: center;
-  }
-  
-  .toast-message {
-    right: 16px;
-    left: 16px;
-    top: 16px;
-    max-width: none;
-  }
+  .modal-footer { flex-direction: column-reverse; gap: 8px; }
+  .btn-secondary, .btn-decline-confirm { width: 100%; text-align: center; }
+  .toast-message { right: 16px; left: 16px; top: 16px; max-width: none; }
 }
 
-/* Extra Small Mobile */
+/* Extra Small Mobile (480px) - Compact View */
 @media (max-width: 480px) {
-  .leaves-management {
-    padding: 16px 12px 32px 12px;
-  }
+  .leaves-management { padding: 16px 12px 32px; }
+  .page-title { font-size: 24px; line-height: 28px; }
+  .filter-buttons { gap: 4px; }
+  .btn-filter { font-size: 12px; padding: 10px 6px; }
   
-  .page-title {
-    font-size: 24px;
-    line-height: 28px;
-  }
-  
-  .filter-buttons {
-    gap: 4px;
-  }
-  
-  .btn-filter {
-    font-size: 12px;
-    padding: 10px 6px;
-  }
-  
-  .mobile-card {
-    margin-bottom: 12px;
-  }
-  
-  .employee-avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 12px;
-  }
-  
-  .employee-name {
-    font-size: 13px;
-  }
-  
-  .employee-id {
-    font-size: 11px;
-  }
-  
-  .info-label,
-  .info-value {
-    font-size: 13px;
-  }
+  .employee-avatar { width: 36px; height: 36px; font-size: 12px; }
+  .employee-name { font-size: 13px; }
+  .employee-id { font-size: 11px; }
+  .info-label, .info-value { font-size: 13px; }
 }
 
-/* Focus styles for accessibility */
-.btn-filter:focus,
-.btn-approve:focus,
-.btn-decline:focus,
-.btn-secondary:focus,
-.btn-decline-confirm:focus {
+/* --- ACCESSIBILITY & FOCUS --- */
+.btn-filter:focus-visible,
+.btn-approve:focus-visible,
+.btn-decline:focus-visible,
+.btn-secondary:focus-visible,
+.btn-decline-confirm:focus-visible,
+.modal-close:focus-visible {
   outline: 2px solid #014c85;
   outline-offset: 2px;
 }
-
 .form-textarea:focus {
   outline: none;
   border-color: #014c85;
   box-shadow: 0 0 0 3px rgba(1, 76, 133, 0.1);
-}
-
-/* Hover effects */
-.mobile-card:hover {
-  box-shadow: 0px 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
-}
-
-/* Loading states */
-.btn-approve:disabled,
-.btn-decline:disabled,
-.btn-decline-confirm:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>
